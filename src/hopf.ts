@@ -1,123 +1,80 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
+interface GeometryProps {
+    scenes: THREE.Scene[],
+    numOfPoints: number,
+    numCircles: number,
+    angles: number[]
+}
 
-const scene: THREE.Scene = new THREE.Scene();
+export function createGeometry(props: GeometryProps) {
+    const { scenes, numOfPoints, angles } = props;
+    const radius = 1;
+    const incrementT = .001;
+    const twoPi = 2 * Math.PI;
 
-const renderer = new THREE.WebGLRenderer({ 
-    canvas: canvas,
-    antialias: true 
-});
-renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setClearColor( 0x000000, 1 );
-document.body.appendChild( renderer.domElement );
+    // Clear the scene
+    scenes.forEach(scene => {
+        scene.children = scene.children.filter(child => !(child instanceof THREE.Line || (child instanceof THREE.Mesh && child.geometry instanceof THREE.SphereGeometry)));
+    });
 
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.up.set( 1, 0, 0 );
-camera.position.set( 0, 2, 2 );
+    // Wireframe sphere
+    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x808080, transparent: true, opacity: 0.5 });
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), sphereMaterial);
+    scenes[1].add(sphere);
 
-const controls = new OrbitControls( camera, renderer.domElement );
+    for (let i = 0; i < numOfPoints; i++) {
+        // Get the angles in radians
+        const alphaD = (angles[2] * Math.PI / 180);
+        const phi = (angles[1] * Math.PI / 180) + i * 6 * Math.PI / 180;  // 6 degrees in radians
+        const theta = (angles[0] * Math.PI / 180);
 
-window.addEventListener( 'resize', function() {
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-} );
+        // Calculate the coordinates of the point
+        const a = radius * Math.sin(theta) * Math.cos(phi);
+        const b = radius * Math.sin(theta) * Math.sin(phi);
+        const c = radius * Math.cos(theta);
 
-class mCube {
-    position: THREE.Vector3;
-    size: THREE.Vector3;
-    color: number;
-    cube: THREE.LineSegments;
+        // Calculate the color
+        const color = new THREE.Color().setHSL(i / numOfPoints, 1, .5);
 
-    constructor(position: THREE.Vector3, size: THREE.Vector3, color: number) {
-        this.position = position;
-        this.size = size;
-        this.color = color;
+        // Add point
+        const pointGeometry = new THREE.SphereGeometry(0.025, 32, 32);
+        const pointMaterial = new THREE.LineBasicMaterial({ color });
+        const point = new THREE.Mesh(pointGeometry, pointMaterial);
+        point.position.set(a, c, b);
+        scenes[1].add(point);
 
-        const vertices: THREE.Vector3[] = this.initVertices();
-        const indices: number[] = this.initIndices();
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(vertices.length * 3);
-        const colors = new Float32Array(vertices.length * 3);
-        const indicesArray = new Uint16Array(indices);
-        const c = new THREE.Color();
+        // Add line
+        const positions = [];
 
-        for (let i = 0; i < vertices.length; i++) {
-            const vertex = vertices[i].clone().multiply(this.size).add(this.position);
-            vertex.toArray(positions, i * 3);
-            c.setHex(color);
-            c.toArray(colors, i * 3);
+        // calculate the angle between the point and the z-axis
+        const alpha = Math.sqrt((1 + c) / 2);
+        const beta = Math.sqrt((1 - c) / 2);
+
+        // Calculate the coordinates of the point of the lines
+        for (let t = 0; t < twoPi + incrementT; t += incrementT) {
+            const theta = Math.atan2(b, -a) - t;
+            // Calculate the 4D coordinates of the point
+            const w = alpha * Math.cos(theta);
+            const x = alpha * Math.sin(theta);
+            const y = beta * Math.cos(t);
+            const z = beta * Math.sin(t);
+            // calculate the radius of the point
+            const r = (Math.acos(w) / Math.PI) / Math.sqrt(1 - w ** 2);
+            // Add the point to the line
+            positions.push(r * x, r * z, r * y);
         }
 
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        geometry.setIndex(new THREE.BufferAttribute(indicesArray, 1));
-        const material = new THREE.MeshBasicMaterial({ vertexColors: true });
-        this.cube = new THREE.LineSegments(geometry, material);
+        // Add the line to the scene
+        const lineGeometry = new THREE.BufferGeometry();
+        lineGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+        const lineMaterial = new THREE.LineBasicMaterial({ color });
+        scenes[0].add(new THREE.Line(lineGeometry, lineMaterial));
 
-        scene.add(this.cube);
+        // Release the geometry and material
+        lineGeometry.dispose();
+        lineMaterial.dispose();
+        pointGeometry.dispose();
+        pointMaterial.dispose();
     }
-
-    initVertices() {
-        const vertices = [
-            new THREE.Vector3(-0.5, -0.5, 0.5),
-            new THREE.Vector3(0.5, -0.5, 0.5),
-            new THREE.Vector3(0.5, 0.5, 0.5),
-            new THREE.Vector3(-0.5, 0.5, 0.5),
-            new THREE.Vector3(-0.5, 0.5, -0.5),
-            new THREE.Vector3(-0.5, -0.5, -0.5),
-            new THREE.Vector3(0.5, -0.5, -0.5),
-            new THREE.Vector3(0.5, 0.5, -0.5),
-        ];
-        return vertices;
-    }
-
-    initIndices() {
-        const indices = [
-            0, 1, 1, 2, 2, 3, 3, 0, // Front face
-            4, 5, 5, 6, 6, 7, 7, 4, // Back face
-            0, 5, 1, 6, 2, 7, 3, 4  // Side edges
-        ];
-        return indices;
-    }
-
-    rotateX(angle: number) {
-        this.cube.rotateX(angle);
-    }
-
-    rotateY(angle: number) {
-        this.cube.rotateY(angle);
-    }
-
-    rotateZ(angle: number) {
-        this.cube.rotateZ(angle);
-    }
-
-    rotate(eulers: THREE.Euler) {
-        this.cube.setRotationFromEuler(eulers);
-    }
-
-    translate(translation: THREE.Vector3) {
-        this.cube.position.add(translation);
-    }
-
-    scale(scale: THREE.Vector3) {
-        this.size.multiply(scale);
-    }
-
 }
-
-function render() {
-    requestAnimationFrame(render);
-    const cube = new mCube(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1,1,1), 0x00ff00);
-    cube.rotate(new THREE.Euler(0, Math.PI / 4, Math.PI / 4));
-
-    // add axis helpers
-    const axesHelper = new THREE.AxesHelper( 1 );
-    scene.add( axesHelper );
-    renderer.render(scene, camera);
-}
-
-render(); // Start the render loop
