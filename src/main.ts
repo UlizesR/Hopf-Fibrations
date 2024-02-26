@@ -26,42 +26,32 @@ window.addEventListener( 'resize', function() {
 } );
 
 // Set up the sliders and labels
-const { sliderC, sliderP, sliderT, sliderPh, sliderAp } = sliderElements;
-const { inputLabelC, inputLabelP, inputLabelT, inputLabelPh, inputLabelAp } = labelElements;
+const { sliderP, sliderT, sliderPh, sliderD } = sliderElements;
+const { inputLabelP, inputLabelT, inputLabelPh, inputLabelD } = labelElements;
 
 // Set up the initial values
-const angles = [Number(sliderT.value), Number(sliderPh.value), Number(sliderAp.value)];
+const angles = [Number(sliderT.value), Number(sliderPh.value), Number(sliderD.value)];
 let numOfPoints = Number(sliderP.value);
-let numCircles = Number(sliderC.value);
 
 // Set up the slider input event listeners
 const handleSliderInput = (slider: HTMLInputElement, label: HTMLElement, angleIndex: number) => {
     const value = Number(slider.value);
     label.innerHTML = `${slider.name}: ${value}`;
-    // MathJax.typeset([label]);  // Typeset the new LaTeX code
     angles[angleIndex] = value;
-    createGeometry({ scenes, numCircles, numOfPoints, angles });
+    createGeometry({ scenes, numOfPoints, angles });
 };
-
-sliderC.oninput = () => {
-    const value = Number(sliderC.value);
-    inputLabelC!.innerHTML = `${sliderC.name}: ${value}`;
-    // MathJax.typeset([inputLabelC]);  // Typeset the new LaTeX code
-    createGeometry({ scenes, numCircles, numOfPoints, angles });
-}
 
 // Set up the input event listeners
 sliderP.oninput = () => {
     numOfPoints = Number(sliderP.value);
     inputLabelP!.innerHTML = `Points: ${numOfPoints}`;
-    // MathJax.typeset([inputLabelP]);  // Typeset the new LaTeX code
-    createGeometry({ scenes, numCircles, numOfPoints, angles });
+    createGeometry({ scenes, numOfPoints, angles });
 };
 
 // add the event listeners
 sliderT.oninput = () => handleSliderInput(sliderT, inputLabelT!, 0);
 sliderPh.oninput = () => handleSliderInput(sliderPh, inputLabelPh!, 1);
-sliderAp.oninput = () => handleSliderInput(sliderAp, inputLabelAp!, 2);
+sliderD.oninput = () => handleSliderInput(sliderD, inputLabelD!, 2);
 
 function render() {
     requestAnimationFrame(render);
@@ -83,5 +73,5 @@ function render() {
     renderer.render(scene2, camera2);
 }
 
-createGeometry({scenes, numCircles, numOfPoints, angles}); // Create the geometry initially
+createGeometry({scenes, numOfPoints, angles}); // Create the geometry initially
 render(); // Start the render loop

@@ -8,7 +8,7 @@ export function setupRenderer(canvas: HTMLCanvasElement) {
         alpha: true
     });
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.setClearColor( 0x000000, 1 );
+    // renderer.setClearColor( 0x000000, 1 );
 
     return renderer;
 }

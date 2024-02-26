@@ -3,7 +3,6 @@ import * as THREE from 'three';
 interface GeometryProps {
     scenes: THREE.Scene[],
     numOfPoints: number,
-    numCircles: number,
     angles: number[]
 }
 
@@ -27,7 +26,18 @@ export function createGeometry(props: GeometryProps) {
         // Get the angles in radians
         const alphaD = (angles[2] * Math.PI / 180);
         const phi = (angles[1] * Math.PI / 180) + i * 6 * Math.PI / 180;  // 6 degrees in radians
-        const theta = (angles[0] * Math.PI / 180);
+        let theta = (angles[0] * Math.PI / 180);
+
+        // tilt the arc form by the first and last point by alpha upon the center of the arc
+        // every point in the arc is tilted by alpha/i degrees 
+        // the center of the arc is tilted by 0 degrees
+        if (i === 0) {
+            theta += alphaD / 2;
+        } else if (i === numOfPoints - 1) {
+            theta -= alphaD / 2;
+        } else {
+            theta += alphaD / 2 - alphaD / (numOfPoints - 1) * i;
+        }
 
         // Calculate the coordinates of the point
         const a = radius * Math.sin(theta) * Math.cos(phi);

@@ -5,69 +5,56 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name=author content="Uli Raudales">
         <title>Hopf Fibration</title>
-        <style>
-            body { 
-                margin: 0; 
-                padding: 0;
-            }
-            #inputDiv
-            {
-                margin: 10px;
-                display: flex;
-                flex-direction: row;
-                align-items: between;
-            }
-            #inputs
-            {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                z-index: 10;
-                width: 30%;
-                height: 40%;
-                background-color: rgb(84, 109, 56, 0.5);
-                border-radius: 25px;
-                padding: 10px;
-            }
-            label
-            {
-                color: white;
-                font-size: 20px;
-                font-family: Arial, Helvetica, sans-serif;
-                margin: 10px;
-            }
-        </style>
+        <link rel="stylesheet" href="./src/index.css" />
     </head>
     <body>
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <div id="app" >
-            <div id="inputs">
-                <div id="inputDiv">
-                    <input type="range" id="sliderC" name="Circles" min="1" max="4" value="0" step="1" />
-                    <label id="inputLabelC" for="Circles" >Circles: 1</label>
+        <div id="app" class="w-screen h-screen bg-gray-900" >
+            <button id="controlBtn" >Controls</button>
+            <div id="controlDiv">
+                <div class='flex justify-between items-center mb-5'>
+                    <h1 class='text-2xl'>Controls</h1>
+                    <button id="controlCloseBtn" >x</button>
                 </div>
-                <div id="inputDiv">
-                    <input type="range" id="sliderP" name="points" min="1" max="60" value="0" step="1" />
-                    <label id="inputLabelP" for="points" >Points: 1</label>
+                <div class='flex flex-col gap-5 p-2'>
+                    <div class="sliderDiv">
+                        <input id="PointSlider" name="Points" type='range' value='0' min='1' max='60' step='1'/>
+                        <label id="inputLabelP" class="slider">Points: </label>
+                    </div>
+                    <div class="sliderDiv">
+                        <input id="ThetaSlider" name="Theta" type='range' value='0' min='0' max='180' step='1' />
+                        <label id="inputLabelT" class="slider">Theta: </label>
+                    </div>
+                    <div class="sliderDiv">
+                        <input id="PhiSlider" name="Phi" type='range' value='0' min='0' max='360' step='1' />
+                        <label id="inputLabelPh" class="slider">Phi:</label>
+                    </div>
+                    <div class="sliderDiv">
+                        <input id="DeltaSlider" name="Delta" type='range' value='0' min='-180' max='180' step='1'/>
+                        <label id="inputLabelD" class="slider">Delta:</label>
+                    </div>
                 </div>
-                <div id="inputDiv">
-                    <input type="range" id="sliderT" name="Theta" min="0" max="180" value="0" step="0.1" />
-                    <label id="inputLabelT" for="Theta" >Theta: 0</label>
-                </div>
-                <div id="inputDiv">
-                    <input type="range" id="sliderPh" name="Phi" min="0" max="360" value="0" step="0.1" />
-                    <label id="inputLabelPh" for="Phi" >Phi: 0</label>
-                </div> 
-                <div id="inputDiv">
-                    <input type="range" id="sliderAp" name="Alpha" min="-90" max="90" value="0" step="0.1" />
-                    <label id="inputLabelAp" for="Alpha" >Alpha: 0</label>
-                </div> 
+                <button id="learnMoreBtn">Learn More</button>
             </div>
             <canvas id="canvas" ></canvas>
         </div>
-        <!-- <script defer type="module" src="/src/Input.ts"></script> -->
+        <script defer type="module" src="/src/Input.ts"></script>
         <script defer type="module" src="/src/main.ts"></script>
-        <!-- <script defer type="module" src="/src/hopf.ts"></script> -->
+
+        <!-- Script for the control button -->
+        <script>
+            const controlBtn = document.getElementById('controlBtn')
+            const closeBtn = document.getElementById('controlCloseBtn')
+            const learnMoreBtn = document.getElementById('learnMoreBtn')
+            const controls = document.getElementById('controlDiv')
+
+            controlBtn.addEventListener('click', () => {
+                controls.style.display = 'block'
+            })
+
+            closeBtn.addEventListener('click', () => {
+                controls.style.display = 'none'
+            })
+
+        </script>
     </body>
 </html>
